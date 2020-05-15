@@ -34,7 +34,7 @@ func ParseStruct(target interface{}, source interface{}) error {
 		return ErrNotAStruct
 	}
 
-	fmt.Println(t)
+	//fmt.Println(t)
 
 	s := reflect.TypeOf(source)
 
@@ -57,7 +57,7 @@ func ParseStruct(target interface{}, source interface{}) error {
 		fmt.Println(i, field.Name, field.Type)
 	}
 
-	fmt.Println(target, source, t)
+	//fmt.Println(target, source, t)
 	return nil
 	// return ErrNotImplemented
 }
