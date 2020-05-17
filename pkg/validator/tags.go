@@ -22,7 +22,7 @@ var ErrInvalidValidation = errors.New("validator/tags: unknown validation")
 var reQualifiers = regexp.MustCompile(`([a-z]+)(:"([^"]+)")?`)
 var reValidators = regexp.MustCompile(`([a-z]+)(=([^,]+))?`)
 
-type ValidateFunc func(string) bool
+type ValidateFunc func(interface{}) bool
 
 type ValidationOptions struct {
 	Source     string
@@ -82,8 +82,12 @@ func parseValidations(validations string) ([]ValidateFunc, error) {
 			if err != nil {
 				return v, err
 			}
-			v = append(v, func(in string) bool {
-				length := len(in)
+			v = append(v, func(in interface{}) bool {
+				s, ok := in.(string)
+				if !ok {
+					return false
+				}
+				length := len(s)
 				return length >= min && length <= max
 			})
 		case validation[1] == "range":
@@ -97,30 +101,28 @@ func parseValidations(validations string) ([]ValidateFunc, error) {
 				return v, err
 			}
 
-			v = append(v, func(in string) bool {
-				n, err := strconv.Atoi(in)
-				if err != nil {
+			v = append(v, func(in interface{}) bool {
+				n, ok := in.(int)
+				if !ok {
 					return false
 				}
 
 				return n >= min && n <= max
 			})
 		case validation[1] == "string":
-			v = append(v, func(in string) bool {
-				return true
+			v = append(v, func(in interface{}) bool {
+				_, ok := in.(string)
+				return ok
 			})
 		case validation[1] == "int":
-			v = append(v, func(in string) bool {
-				_, err := strconv.Atoi(in)
-				if err != nil {
-					return false
-				}
-				return true
+			v = append(v, func(in interface{}) bool {
+				_, ok := in.(int)
+				return ok
 			})
 		case validation[1] == "float":
-			v = append(v, func(in string) bool {
-				_, err := strconv.ParseFloat(in, 64)
-				return err == nil
+			v = append(v, func(in interface{}) bool {
+				_, ok := in.(float64)
+				return ok
 			})
 		default:
 			return v, ErrInvalidValidation

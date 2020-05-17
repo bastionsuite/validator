@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"math"
 	"testing"
 )
 
@@ -103,7 +104,7 @@ func TestInvalidRangeValidations(t *testing.T) {
 	}
 }
 
-func TestValidRangeValidations(t *testing.T) {
+func TestValidIntRangeValidations(t *testing.T) {
 	v, _ := parseValidations("range=5-10")
 	if len(v) != 1 {
 		t.Errorf("Expected one validation, got %v", len(v))
@@ -113,13 +114,13 @@ func TestValidRangeValidations(t *testing.T) {
 	testFunc := v[0]
 
 	tables := []struct {
-		Input  string
+		Input  interface{}
 		Expect bool
 	}{
-		{"1", false},
-		{"5", true},
-		{"10", true},
-		{"11", false},
+		{1, false},
+		{5, true},
+		{10, true},
+		{11, false},
 		{"abc", false},
 	}
 
@@ -156,14 +157,14 @@ func TestValidIntValidation(t *testing.T) {
 	testFunc := v[0]
 
 	tables := []struct {
-		Input  string
+		Input  interface{}
 		Expect bool
 	}{
-		{"1", true},
-		{"12", true},
-		{"1092323", true},
+		{1, true},
+		{12, true},
+		{1092323, true},
+		{0xdeadbeaf, true},
 		{"abc", false},
-		{"0xdeadbeef", false},
 	}
 
 	for _, row := range tables {
@@ -184,16 +185,17 @@ func TestFloatValidation(t *testing.T) {
 	testFunc := v[0]
 
 	tables := []struct {
-		Input  string
+		Input  interface{}
 		Expect bool
 	}{
-		{"1.0", true},
-		{"1", true},
-		{"0.123", true},
-		{"abcdef", false},
-		{"NaN", true},
-		{"+Inf", true},
-		{"-Inf", true},
+		{1.0, true},
+		{1., true},
+		{0.123, true},
+		{-0.123, true},
+		{"falsdkjas", false},
+		{math.NaN(), true},
+		{math.Inf(1), true},
+		{math.Inf(-1), true},
 	}
 
 	for _, row := range tables {
