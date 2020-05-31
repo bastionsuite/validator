@@ -77,7 +77,7 @@ func ParseRequestForm(target interface{}, source url.Values) error {
 		case reflect.Struct:
 			// This case happens when the object is not a simple primitive.
 			switch field.Type.Name() {
-			case "time.Time":
+			case "Time":
 				parsedTime, err := time.Parse("2006-01-02", value)
 				if err != nil {
 					return fmt.Errorf("Could not conver value to time.Time: %+v", err)
@@ -162,6 +162,22 @@ func ParseJSONBody(target interface{}, source []byte) error {
 				}
 			}
 			valField.SetFloat(i)
+		case reflect.Struct:
+			// This case happens when the object is not a simple primitive.
+			switch field.Type.Name() {
+			case "Time":
+				strval, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("ParseJSONBody: Error during casting value to string. Value: %+v", value)
+				}
+				parsedTime, err := time.Parse("2006-01-02", strval)
+				if err != nil {
+					return fmt.Errorf("Could not conver value to time.Time: %+v", err)
+				}
+				valField.Set(reflect.ValueOf(parsedTime))
+			default:
+				fmt.Errorf("ParseJSONBody: Unsupport type in target struct: %+v", field.Type.Name())
+			}
 		default:
 			return fmt.Errorf("ParseJSONBody: Unsupported type in target struct: %+v", field.Type.Kind())
 		}
