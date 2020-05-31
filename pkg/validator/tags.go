@@ -124,6 +124,10 @@ func parseValidations(validations string) ([]ValidateFunc, error) {
 				_, ok := in.(float64)
 				return ok
 			})
+		case validation[1] == "time":
+			v = append(v, func(in interface{}) bool {
+				return true
+			})
 		default:
 			return v, ErrInvalidValidation
 		}

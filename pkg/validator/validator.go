@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
+	"time"
 )
 
 var ErrNotImplemented = errors.New("validator: function not implemented")
@@ -73,6 +74,18 @@ func ParseRequestForm(target interface{}, source url.Values) error {
 				return fmt.Errorf("Invalid value for %s: %v", field.Name, value)
 			}
 			valField.SetFloat(f)
+		case reflect.Struct:
+			// This case happens when the object is not a simple primitive.
+			switch field.Type.Name() {
+			case "time.Time":
+				parsedTime, err := time.Parse("2006-01-02", value)
+				if err != nil {
+					return fmt.Errorf("Could not conver value to time.Time: %+v", err)
+				}
+				valField.Set(reflect.ValueOf(parsedTime))
+			default:
+				fmt.Errorf("ParseJSONBody: Unsupport type in target struct: %+v", field.Type.Name())
+			}
 		default:
 			return fmt.Errorf("ParseJSONBody: Unsupported type in target struct: %+v", field.Type.Kind())
 		}
